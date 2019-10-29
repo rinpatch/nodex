@@ -12,17 +12,17 @@ EXAMPLE_CFLAGS += -D_REENTRANT
 EXAMPLE_CFLAGS += -Wno-unused-parameter
 
 # set erlang include path
-ERLANG_PATH := $(shell erl -eval 'io:format("~s", [lists:concat([code:root_dir(), "/erts-", erlang:system_info(version)])])' -s init stop -noshell)
+ERLANG_PATH = $(shell erl -eval 'io:format("~s", [lists:concat([code:root_dir(), "/erts-", erlang:system_info(version)])])' -s init stop -noshell)
 ERL_INTERFACE := $(wildcard $(ERLANG_PATH)/../lib/erl_interface-*)
 
 EXAMPLE_CFLAGS += -I$(ERLANG_PATH)/include
-EXAMPLE_CFLAGS += -L$(ERL_INTERFACE)/lib
 EXAMPLE_CFLAGS += -I$(ERL_INTERFACE)/include
-EXAMPLE_CFLAGS += -lerl_interface -lei
+EXAMPLE_CFLAGS += -L$(ERL_INTERFACE)/lib
+EXAMPLE_CFLAGS += -lerl_interface -lei -lpthread
 
 # platform specific includes
-UNAME := $(shell uname -s | tr '[:upper:]' '[:lower:]')
-ifneq ($(wilcard Makefile.$(UNAME)),)
+UNAME = $(shell uname -s)
+ifneq ($(wildcard Makefile.$(UNAME)),)
 	include Makefile.$(UNAME)
 endif
 
@@ -34,7 +34,7 @@ example: priv/example_client priv/just_exit
 	$(MIX) compile
 
 priv/%: c_src/%.c
-	$(CC) $(EXAMPLE_CFLAGS) $(EXAMPLE_LDFLAGS) -o $@ $<
+	$(CC) -o $@ $< $(EXAMPLE_CFLAGS) $(EXAMPLE_LDFLAGS)
 
 clean:
 	$(RM) -r priv/*
